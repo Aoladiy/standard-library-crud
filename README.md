@@ -1,0 +1,1 @@
+to run app run command: ```go run .```
