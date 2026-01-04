@@ -1,1 +1,1 @@
-to run app run command: ```go run .```
+to run app run command: ```go run ./cmd/main/.```

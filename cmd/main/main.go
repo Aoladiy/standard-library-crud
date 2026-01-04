@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/Aoladiy/standard-library-crud/envLoading"
-	"github.com/Aoladiy/standard-library-crud/router"
+	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
+	"github.com/Aoladiy/standard-library-crud/internal/router"
 )
 
 func main() {

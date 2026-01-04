@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Aoladiy/standard-library-crud/envLoading"
+	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
 )
 
 func setupServer(handler http.Handler, envVars envLoading.EnvVariables) {
