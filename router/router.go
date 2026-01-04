@@ -2,7 +2,8 @@ package router
 
 import (
 	"net/http"
-	"standard-library-crud/item"
+
+	"github.com/Aoladiy/standard-library-crud/item"
 )
 
 func SetupRouter() http.Handler {

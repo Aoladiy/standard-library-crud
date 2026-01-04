@@ -1,4 +1,4 @@
-module standard-library-crud
+module github.com/Aoladiy/standard-library-crud
 
 go 1.25
 
