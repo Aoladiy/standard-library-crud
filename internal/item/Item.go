@@ -1,7 +1,9 @@
 package item
 
-type Item struct {
-	Message *string `json:"message,omitempty"`
+type User struct {
+	Email       string  `json:"email"`
+	FullName    *string `json:"fullName,omitempty"`
+	PhoneNumber *string `json:"phoneNumber,omitempty"`
 }
 
-var items []Item
+var users []User
