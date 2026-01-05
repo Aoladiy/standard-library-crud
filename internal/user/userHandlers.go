@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,11 +14,12 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	if id >= len(users) {
-		http.Error(w, fmt.Sprintf("No user with id %v", id), http.StatusBadRequest)
+	user, err := Users.GetUserById(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	beautifulString, err := json.MarshalIndent(users[id], "", "\t")
+	beautifulString, err := json.MarshalIndent(user, "", "\t")
 	if err != nil {
 		log.Println(err)
 		return
@@ -33,7 +33,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	beautifulUsers := map[uint]User{}
-	for i, user := range users {
+	for i, user := range Users.GetUsers() {
 		beautifulUsers[uint(i)] = user
 	}
 	beautifulString, err := json.MarshalIndent(beautifulUsers, "", "\t")
@@ -51,6 +51,7 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user User
 	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&user)
 	if err != nil {
 		http.Error(w, "Cannot decode json", http.StatusUnprocessableEntity)
@@ -65,8 +66,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	users = append(users, user)
-	_, err = w.Write([]byte("Successfully created User with ID: " + strconv.Itoa(len(users)-1)))
+	Users.AddUser(user)
+	_, err = w.Write([]byte("Successfully created User with ID: " + strconv.Itoa(len(Users.GetUsers())-1)))
 	if err != nil {
 		log.Println(err)
 		return
@@ -81,17 +82,8 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	if id >= len(users) {
-		http.Error(w, fmt.Sprintf("No user with id %v", id), http.StatusBadRequest)
-		return
-	}
-	err = validateUser(newUser)
-	if err != nil {
-		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
-		return
-	}
-	oldUser := &users[id]
 	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&newUser)
 	if err != nil {
 		http.Error(w, "Cannot decode json", http.StatusUnprocessableEntity)
@@ -101,12 +93,15 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad body of request", http.StatusBadRequest)
 		return
 	}
-	oldUser.Email = newUser.Email
-	if newUser.FullName != nil {
-		oldUser.FullName = newUser.FullName
+	err = validateUser(newUser)
+	if err != nil {
+		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
+		return
 	}
-	if newUser.PhoneNumber != nil {
-		oldUser.PhoneNumber = newUser.PhoneNumber
+	_, err = Users.UpdateUser(id, newUser)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	_, err = w.Write([]byte("Successfully updated User with ID: " + rawId))
 	if err != nil {
@@ -122,11 +117,11 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	if id >= len(users) {
-		http.Error(w, fmt.Sprintf("No user with id %v", id), http.StatusBadRequest)
+	err = Users.DeleteUser(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	users = append(users[:id], users[id+1:]...)
 	_, err = w.Write([]byte("Successfully deleted User with ID: " + rawId))
 	if err != nil {
 		log.Println(err)
