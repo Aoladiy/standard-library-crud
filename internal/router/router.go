@@ -12,9 +12,10 @@ func SetupRouter() http.Handler {
 	router.HandleFunc("GET /item", user.GetUsersHandler)
 	router.HandleFunc("POST /item", user.CreateUserHandler)
 	router.HandleFunc("PATCH /item/{id}", user.UpdateUserHandler)
-	router.Handle("DELETE /item/{id}", SecondLoggerMiddleware(LoggerMiddleware(http.HandlerFunc(user.DeleteUserHandler))))
+	router.Handle("DELETE /item/{id}", LoggerMiddleware(http.HandlerFunc(user.DeleteUserHandler)))
 	return RegisterMiddleware(
 		router,
+		RequestIdMiddleware,
 		LoggerMiddleware,
 	)
 }

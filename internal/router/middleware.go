@@ -1,10 +1,17 @@
 package router
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
+
+type CtxKey string
+
+const RequestId CtxKey = "request_id"
 
 type CustomResponseWriter struct {
 	http.ResponseWriter
@@ -22,23 +29,23 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 			ResponseWriter: w,
 			StatusCode:     http.StatusOK,
 		}
-		start := time.Now()
-		next.ServeHTTP(cw, r)
-		finish := time.Since(start)
-		log.Println(cw.StatusCode, r.Method, r.URL.Path, finish)
-	})
-}
-
-func SecondLoggerMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cw := &CustomResponseWriter{
-			ResponseWriter: w,
-			StatusCode:     http.StatusOK,
+		requestId, ok := r.Context().Value(RequestId).(uuid.UUID)
+		if !ok {
+			log.Println("Something went wrong - request id is failed converting into uuid")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
 		}
 		start := time.Now()
 		next.ServeHTTP(cw, r)
 		finish := time.Since(start)
-		log.Println(cw.StatusCode, r.Method, r.URL.Path, finish, "PAY ATTENTION!!! This is second middleware!!!")
+		log.Println(requestId, cw.StatusCode, r.Method, r.URL.Path, finish)
+	})
+}
+
+func RequestIdMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), RequestId, uuid.New())
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
