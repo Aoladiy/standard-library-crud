@@ -7,16 +7,16 @@ import (
 	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
 )
 
-func setupServer(handler http.Handler, envVars envLoading.EnvVariables) {
+func setupServer(handler http.Handler) {
 	server := &http.Server{
-		Addr:                         envVars.Addr,
+		Addr:                         envLoading.EnvVars.Addr,
 		Handler:                      handler,
 		DisableGeneralOptionsHandler: false,
 		TLSConfig:                    nil,
-		ReadTimeout:                  envVars.ReadTimeout,
-		ReadHeaderTimeout:            envVars.ReadHeaderTimeout,
-		WriteTimeout:                 envVars.WriteTimeout,
-		IdleTimeout:                  envVars.IdleTimeout,
+		ReadTimeout:                  envLoading.EnvVars.ReadTimeout,
+		ReadHeaderTimeout:            envLoading.EnvVars.ReadHeaderTimeout,
+		WriteTimeout:                 envLoading.EnvVars.WriteTimeout,
+		IdleTimeout:                  envLoading.EnvVars.IdleTimeout,
 		MaxHeaderBytes:               0,
 		TLSNextProto:                 nil,
 		ConnState:                    nil,
@@ -27,7 +27,7 @@ func setupServer(handler http.Handler, envVars envLoading.EnvVariables) {
 		Protocols:                    nil,
 	}
 
-	log.Printf("server listening %v started\n", envVars.Addr)
+	log.Printf("server listening %v started\n", envLoading.EnvVars.Addr)
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatalln(err)

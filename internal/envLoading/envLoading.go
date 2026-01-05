@@ -15,7 +15,11 @@ type EnvVariables struct {
 	ReadHeaderTimeout time.Duration
 	WriteTimeout      time.Duration
 	IdleTimeout       time.Duration
+	LoadedUsername    string
+	LoadedPassword    string
 }
+
+var EnvVars EnvVariables
 
 func LoadEnvVariables() EnvVariables {
 	err := godotenv.Load()
@@ -48,12 +52,24 @@ func LoadEnvVariables() EnvVariables {
 		log.Println("error loading SERVER_IDLE_TIMEOUT env variable: " + err.Error())
 		serverIdleTimeout = 60
 	}
+	loadedUsername := os.Getenv("ADMIN_USERNAME")
+	if loadedUsername == "" {
+		log.Println("NO ADMIN_USERNAME SET")
+	}
+	loadedPassword := os.Getenv("ADMIN_PASSWORD")
+	if loadedPassword == "" {
+		log.Println("NO ADMIN_PASSWORD SET")
+	}
 	log.Println("successfully loaded env variables")
-	return EnvVariables{
+
+	EnvVars = EnvVariables{
 		Addr:              os.Getenv("APP_HOST") + ":" + serverPort,
 		ReadTimeout:       time.Second * time.Duration(serverReadTimeout),
 		ReadHeaderTimeout: time.Second * time.Duration(serverReadHeaderTimeout),
 		WriteTimeout:      time.Second * time.Duration(serverWriteTimeout),
 		IdleTimeout:       time.Second * time.Duration(serverIdleTimeout),
+		LoadedUsername:    loadedUsername,
+		LoadedPassword:    loadedPassword,
 	}
+	return EnvVars
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
 	"github.com/google/uuid"
 )
 
@@ -51,6 +52,24 @@ func RequestIdMiddleware(next http.Handler) http.Handler {
 
 func TimeoutMiddleware(next http.Handler) http.Handler {
 	return http.TimeoutHandler(next, time.Duration(1)*time.Second, "Timeout from middleware expired")
+}
+
+func BasicAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
+		if !ok {
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted"`)
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		if envLoading.EnvVars.LoadedUsername == username && envLoading.EnvVars.LoadedPassword == password {
+			next.ServeHTTP(w, r)
+			return
+		}
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted"`)
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	})
 }
 
 func ChainOfMiddleware(handler http.Handler, middleware ...func(next http.Handler) http.Handler) http.Handler {

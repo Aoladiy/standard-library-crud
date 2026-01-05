@@ -17,6 +17,7 @@ func SetupRouter() http.Handler {
 		router,
 		RequestIdMiddleware,
 		LoggerMiddleware,
+		BasicAuthMiddleware,
 		TimeoutMiddleware,
 	)
 }

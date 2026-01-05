@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	envVars := envLoading.LoadEnvVariables()
+	envLoading.LoadEnvVariables()
 	handler := router.SetupRouter()
-	setupServer(handler, envVars)
+	setupServer(handler)
 }
