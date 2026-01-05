@@ -13,9 +13,10 @@ func SetupRouter() http.Handler {
 	router.HandleFunc("POST /item", user.CreateUserHandler)
 	router.HandleFunc("PATCH /item/{id}", user.UpdateUserHandler)
 	router.Handle("DELETE /item/{id}", LoggerMiddleware(http.HandlerFunc(user.DeleteUserHandler)))
-	return RegisterMiddleware(
+	return ChainOfMiddleware(
 		router,
 		RequestIdMiddleware,
 		LoggerMiddleware,
+		TimeoutMiddleware,
 	)
 }

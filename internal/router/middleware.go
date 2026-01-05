@@ -49,7 +49,11 @@ func RequestIdMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func RegisterMiddleware(handler http.Handler, middleware ...func(next http.Handler) http.Handler) http.Handler {
+func TimeoutMiddleware(next http.Handler) http.Handler {
+	return http.TimeoutHandler(next, time.Duration(1)*time.Second, "Timeout from middleware expired")
+}
+
+func ChainOfMiddleware(handler http.Handler, middleware ...func(next http.Handler) http.Handler) http.Handler {
 	for i := len(middleware) - 1; i >= 0; i-- {
 		handler = middleware[i](handler)
 	}
