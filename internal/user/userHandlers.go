@@ -1,4 +1,4 @@
-package item
+package user
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func GetItemHandler(w http.ResponseWriter, r *http.Request) {
+func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	rawId := r.PathValue("id")
 	id, err := strconv.Atoi(rawId)
 	if err != nil {
@@ -31,12 +31,12 @@ func GetItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetItemsHandler(w http.ResponseWriter, r *http.Request) {
-	beautifulItems := map[uint]User{}
+func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+	beautifulUsers := map[uint]User{}
 	for i, item := range users {
-		beautifulItems[uint(i)] = item
+		beautifulUsers[uint(i)] = item
 	}
-	beautifulString, err := json.MarshalIndent(beautifulItems, "", "\t")
+	beautifulString, err := json.MarshalIndent(beautifulUsers, "", "\t")
 	if err != nil {
 		log.Println(err)
 		return
@@ -48,10 +48,10 @@ func GetItemsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func CreateItemHandler(w http.ResponseWriter, r *http.Request) {
-	var item User
+func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var user User
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&item)
+	err := decoder.Decode(&user)
 	if err != nil {
 		http.Error(w, "Cannot decode json", http.StatusUnprocessableEntity)
 		return
@@ -60,7 +60,12 @@ func CreateItemHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad body of request", http.StatusBadRequest)
 		return
 	}
-	users = append(users, item)
+	err = validateUser(user)
+	if err != nil {
+		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	users = append(users, user)
 	_, err = w.Write([]byte("Successfully created User with ID: " + strconv.Itoa(len(users)-1)))
 	if err != nil {
 		log.Println(err)
@@ -68,8 +73,8 @@ func CreateItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
-	var newItem User
+func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var newUser User
 	rawId := r.PathValue("id")
 	id, err := strconv.Atoi(rawId)
 	if err != nil {
@@ -80,9 +85,14 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("No item with id %v", id), http.StatusBadRequest)
 		return
 	}
-	oldItem := &users[id]
+	err = validateUser(newUser)
+	if err != nil {
+		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	oldUser := &users[id]
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&newItem)
+	err = decoder.Decode(&newUser)
 	if err != nil {
 		http.Error(w, "Cannot decode json", http.StatusUnprocessableEntity)
 		return
@@ -91,12 +101,12 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad body of request", http.StatusBadRequest)
 		return
 	}
-	oldItem.Email = newItem.Email
-	if newItem.FullName != nil {
-		oldItem.FullName = newItem.FullName
+	oldUser.Email = newUser.Email
+	if newUser.FullName != nil {
+		oldUser.FullName = newUser.FullName
 	}
-	if newItem.PhoneNumber != nil {
-		oldItem.PhoneNumber = newItem.PhoneNumber
+	if newUser.PhoneNumber != nil {
+		oldUser.PhoneNumber = newUser.PhoneNumber
 	}
 	_, err = w.Write([]byte("Successfully updated User with ID: " + rawId))
 	if err != nil {
@@ -105,7 +115,7 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DeleteItemHandler(w http.ResponseWriter, r *http.Request) {
+func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	rawId := r.PathValue("id")
 	id, err := strconv.Atoi(rawId)
 	if err != nil {

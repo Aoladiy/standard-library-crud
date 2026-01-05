@@ -3,16 +3,16 @@ package router
 import (
 	"net/http"
 
-	"github.com/Aoladiy/standard-library-crud/internal/item"
+	"github.com/Aoladiy/standard-library-crud/internal/user"
 )
 
 func SetupRouter() http.Handler {
 	router := http.NewServeMux()
-	router.HandleFunc("GET /item/{id}", item.GetItemHandler)
-	router.HandleFunc("GET /item", item.GetItemsHandler)
-	router.HandleFunc("POST /item", item.CreateItemHandler)
-	router.HandleFunc("PATCH /item/{id}", item.UpdateItemHandler)
-	router.Handle("DELETE /item/{id}", SecondLoggerMiddleware(LoggerMiddleware(http.HandlerFunc(item.DeleteItemHandler))))
+	router.HandleFunc("GET /item/{id}", user.GetUserHandler)
+	router.HandleFunc("GET /item", user.GetUsersHandler)
+	router.HandleFunc("POST /item", user.CreateUserHandler)
+	router.HandleFunc("PATCH /item/{id}", user.UpdateUserHandler)
+	router.Handle("DELETE /item/{id}", SecondLoggerMiddleware(LoggerMiddleware(http.HandlerFunc(user.DeleteUserHandler))))
 	return RegisterMiddleware(
 		router,
 		LoggerMiddleware,
