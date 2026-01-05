@@ -8,11 +8,11 @@ import (
 
 func SetupRouter() http.Handler {
 	router := http.NewServeMux()
-	router.HandleFunc("GET /item/{id}", user.GetUserHandler)
-	router.HandleFunc("GET /item", user.GetUsersHandler)
-	router.HandleFunc("POST /item", user.CreateUserHandler)
-	router.HandleFunc("PATCH /item/{id}", user.UpdateUserHandler)
-	router.Handle("DELETE /item/{id}", LoggerMiddleware(http.HandlerFunc(user.DeleteUserHandler)))
+	router.HandleFunc("GET /user/{id}", user.GetUserHandler)
+	router.HandleFunc("GET /user", user.GetUsersHandler)
+	router.HandleFunc("POST /user", user.CreateUserHandler)
+	router.HandleFunc("PATCH /user/{id}", user.UpdateUserHandler)
+	router.Handle("DELETE /user/{id}", LoggerMiddleware(http.HandlerFunc(user.DeleteUserHandler)))
 	return ChainOfMiddleware(
 		router,
 		RequestIdMiddleware,

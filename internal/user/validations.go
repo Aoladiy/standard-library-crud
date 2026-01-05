@@ -6,9 +6,9 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func validateUser(item User) error {
+func validateUser(user User) error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(item)
+	err := validate.Struct(user)
 	if err != nil {
 		log.Println("User failed validation", err)
 		return err

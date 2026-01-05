@@ -16,7 +16,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if id >= len(users) {
-		http.Error(w, fmt.Sprintf("No item with id %v", id), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("No user with id %v", id), http.StatusBadRequest)
 		return
 	}
 	beautifulString, err := json.MarshalIndent(users[id], "", "\t")
@@ -33,8 +33,8 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	beautifulUsers := map[uint]User{}
-	for i, item := range users {
-		beautifulUsers[uint(i)] = item
+	for i, user := range users {
+		beautifulUsers[uint(i)] = user
 	}
 	beautifulString, err := json.MarshalIndent(beautifulUsers, "", "\t")
 	if err != nil {
@@ -82,7 +82,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if id >= len(users) {
-		http.Error(w, fmt.Sprintf("No item with id %v", id), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("No user with id %v", id), http.StatusBadRequest)
 		return
 	}
 	err = validateUser(newUser)
@@ -123,7 +123,7 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if id >= len(users) {
-		http.Error(w, fmt.Sprintf("No item with id %v", id), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("No user with id %v", id), http.StatusBadRequest)
 		return
 	}
 	users = append(users[:id], users[id+1:]...)
