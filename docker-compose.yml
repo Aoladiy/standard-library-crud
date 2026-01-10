@@ -1,0 +1,9 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "$SERVER_PORT:$SERVER_PORT"
+    volumes:
+      - ./.env:/app/.env:ro
