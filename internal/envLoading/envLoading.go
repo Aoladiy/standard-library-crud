@@ -17,9 +17,25 @@ type EnvVariables struct {
 	IdleTimeout       time.Duration
 	LoadedUsername    string
 	LoadedPassword    string
+	DBHost            string
+	DBUser            string
+	DBPass            string
+}
+
+type DbParams struct {
+	User     string
+	Password string
+	Host     string
+	Port     string
+	DbName   string
+}
+
+func (d *DbParams) GetDsn() string {
+	return "postgres://" + d.User + ":" + d.Password + "@" + d.Host + ":" + d.Port + "/" + d.DbName
 }
 
 var EnvVars EnvVariables
+var DbConnParams DbParams
 
 func LoadEnvVariables() EnvVariables {
 	err := godotenv.Load()
@@ -60,7 +76,37 @@ func LoadEnvVariables() EnvVariables {
 	if loadedPassword == "" {
 		log.Println("NO ADMIN_PASSWORD SET")
 	}
+
+	loadedDbUser := os.Getenv("DB_USER")
+	if loadedDbUser == "" {
+		log.Println("NO DB_USER SET")
+	}
+	loadedDbPassword := os.Getenv("DB_PASSWORD")
+	if loadedDbPassword == "" {
+		log.Println("NO DB_PASSWORD SET")
+	}
+	loadedDbHost := os.Getenv("DB_HOST")
+	if loadedDbHost == "" {
+		log.Println("NO DB_HOST SET")
+	}
+	loadedDbPort := os.Getenv("DB_PORT")
+	if loadedDbPort == "" {
+		log.Println("NO DB_PORT SET")
+	}
+	loadedDbName := os.Getenv("DB_NAME")
+	if loadedDbName == "" {
+		log.Println("NO DB_NAME SET")
+	}
+
 	log.Println("successfully loaded env variables")
+
+	DbConnParams = DbParams{
+		User:     loadedDbUser,
+		Password: loadedDbPassword,
+		Host:     loadedDbHost,
+		Port:     loadedDbPort,
+		DbName:   loadedDbName,
+	}
 
 	EnvVars = EnvVariables{
 		Addr:              os.Getenv("APP_HOST") + ":" + serverPort,
