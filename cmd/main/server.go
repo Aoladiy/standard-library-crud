@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Aoladiy/standard-library-crud/internal/db"
 	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
 )
 
@@ -31,6 +32,13 @@ func setupServer(handler http.Handler) {
 			return
 		}
 	}()
+	err := gracefulShutdown(server)
+	if err != nil {
+		return
+	}
+}
+
+func gracefulShutdown(server *http.Server) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
@@ -39,7 +47,13 @@ func setupServer(handler http.Handler) {
 	err := server.Shutdown(ctx)
 	if err != nil {
 		log.Println("Error while shutdown", err)
-		return
+		return err
+	}
+	err = db.DB.Close()
+	if err != nil {
+		log.Println("Error while closing db", err)
+		return err
 	}
 	log.Println("Graceful shutdown complete")
+	return nil
 }

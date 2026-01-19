@@ -11,7 +11,7 @@ func SetupRouter() http.Handler {
 	router.HandleFunc("GET /user/{id}", user.GetUserHandler)
 	router.HandleFunc("GET /user", user.GetUsersHandler)
 	router.HandleFunc("POST /user", user.CreateUserHandler)
-	router.HandleFunc("PATCH /user/{id}", user.UpdateUserHandler)
+	router.HandleFunc("PUT /user/{id}", user.UpdateUserHandler)
 	router.Handle("DELETE /user/{id}", LoggerMiddleware(http.HandlerFunc(user.DeleteUserHandler)))
 	return ChainOfMiddleware(
 		router,

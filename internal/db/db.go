@@ -11,7 +11,8 @@ import (
 var DB *sql.DB
 
 func InitDB() *sql.DB {
-	DB, err := sql.Open("pgx", envLoading.DbConnParams.GetDsn())
+	var err error
+	DB, err = sql.Open("pgx", envLoading.DbConnParams.GetDsn())
 	if err != nil {
 		log.Fatalln("Cannot connect to database:", err)
 		return nil

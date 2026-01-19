@@ -14,7 +14,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	user, err := Users.GetUserById(id)
+	user, err := GetUserById(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -24,6 +24,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(beautifulString)
 	if err != nil {
 		log.Println(err)
@@ -32,15 +33,17 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	beautifulUsers := map[uint]User{}
-	for i, user := range Users.GetUsers() {
-		beautifulUsers[uint(i)] = user
+	users, err := GetUsers()
+	if err != nil {
+		http.Error(w, "cannot read all users", http.StatusInternalServerError)
+		return
 	}
-	beautifulString, err := json.MarshalIndent(beautifulUsers, "", "\t")
+	beautifulString, err := json.MarshalIndent(users, "", "\t")
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(beautifulString)
 	if err != nil {
 		log.Println(err)
@@ -66,8 +69,12 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	Users.AddUser(user)
-	_, err = w.Write([]byte("Successfully created User with ID: " + strconv.Itoa(len(Users.GetUsers())-1)))
+	id, err := CreateUser(user)
+	if err != nil {
+		http.Error(w, "cannot create user", http.StatusInternalServerError)
+		return
+	}
+	_, err = w.Write([]byte("Successfully created User with ID: " + strconv.Itoa(id)))
 	if err != nil {
 		log.Println(err)
 		return
@@ -93,17 +100,22 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad body of request", http.StatusBadRequest)
 		return
 	}
+	newUser.Id = id
 	err = validateUser(newUser)
 	if err != nil {
 		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	_, err = Users.UpdateUser(id, newUser)
-	if err != nil {
+	err, ok := UpdateUser(newUser)
+	if err != nil && !ok {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	_, err = w.Write([]byte("Successfully updated User with ID: " + rawId))
+	if err != nil {
+		_, err = w.Write([]byte("Nothing updated, most likely there is just no rows with such id: " + rawId))
+	} else {
+		_, err = w.Write([]byte("Successfully updated User with ID: " + rawId))
+	}
 	if err != nil {
 		log.Println(err)
 		return
@@ -117,12 +129,16 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	err = Users.DeleteUser(id)
-	if err != nil {
+	err, ok := DeleteUserById(id)
+	if err != nil && !ok {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	_, err = w.Write([]byte("Successfully deleted User with ID: " + rawId))
+	if err != nil {
+		_, err = w.Write([]byte("Nothing deleted, most likely there is just no rows with such id: " + rawId))
+	} else {
+		_, err = w.Write([]byte("Successfully deleted User with ID: " + rawId))
+	}
 	if err != nil {
 		log.Println(err)
 		return

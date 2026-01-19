@@ -8,7 +8,7 @@ import (
 
 func main() {
 	envLoading.LoadEnvVariables()
-	_ = db.InitDB()
+	db.InitDB()
 	handler := router.SetupRouter()
 	setupServer(handler)
 }
