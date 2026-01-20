@@ -17,25 +17,16 @@ type EnvVariables struct {
 	IdleTimeout       time.Duration
 	LoadedUsername    string
 	LoadedPassword    string
-	DBHost            string
 	DBUser            string
 	DBPass            string
+	DBHost            string
+	DBPort            string
+	DBName            string
 }
 
-type DbParams struct {
-	User     string
-	Password string
-	Host     string
-	Port     string
-	DbName   string
+func (d *EnvVariables) GetDsn() string {
+	return "postgres://" + d.DBUser + ":" + d.DBPass + "@" + d.DBHost + ":" + d.DBPort + "/" + d.DBName
 }
-
-func (d *DbParams) GetDsn() string {
-	return "postgres://" + d.User + ":" + d.Password + "@" + d.Host + ":" + d.Port + "/" + d.DbName
-}
-
-var EnvVars EnvVariables
-var DbConnParams DbParams
 
 func LoadEnvVariables() EnvVariables {
 	err := godotenv.Load()
@@ -100,15 +91,7 @@ func LoadEnvVariables() EnvVariables {
 
 	log.Println("successfully loaded env variables")
 
-	DbConnParams = DbParams{
-		User:     loadedDbUser,
-		Password: loadedDbPassword,
-		Host:     loadedDbHost,
-		Port:     loadedDbPort,
-		DbName:   loadedDbName,
-	}
-
-	EnvVars = EnvVariables{
+	return EnvVariables{
 		Addr:              os.Getenv("APP_HOST") + ":" + serverPort,
 		ReadTimeout:       time.Second * time.Duration(serverReadTimeout),
 		ReadHeaderTimeout: time.Second * time.Duration(serverReadHeaderTimeout),
@@ -116,6 +99,10 @@ func LoadEnvVariables() EnvVariables {
 		IdleTimeout:       time.Second * time.Duration(serverIdleTimeout),
 		LoadedUsername:    loadedUsername,
 		LoadedPassword:    loadedPassword,
+		DBUser:            loadedDbUser,
+		DBPass:            loadedDbPassword,
+		DBHost:            loadedDbHost,
+		DBPort:            loadedDbPort,
+		DBName:            loadedDbName,
 	}
-	return EnvVars
 }

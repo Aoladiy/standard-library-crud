@@ -7,14 +7,22 @@ import (
 	"strconv"
 )
 
-func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+type Handler struct {
+	s Service
+}
+
+func NewHandler(s Service) *Handler {
+	return &Handler{s: s}
+}
+
+func (h Handler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	rawId := r.PathValue("id")
 	id, err := strconv.Atoi(rawId)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	user, err := GetUserById(id)
+	user, err := h.s.GetUserById(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -32,8 +40,8 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	users, err := GetUsers()
+func (h Handler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := h.s.GetUsers()
 	if err != nil {
 		http.Error(w, "cannot read all users", http.StatusInternalServerError)
 		return
@@ -51,7 +59,7 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+func (h Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user User
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -69,7 +77,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	id, err := CreateUser(user)
+	id, err := h.s.CreateUser(user)
 	if err != nil {
 		http.Error(w, "cannot create user", http.StatusInternalServerError)
 		return
@@ -81,7 +89,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+func (h Handler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var newUser User
 	rawId := r.PathValue("id")
 	id, err := strconv.Atoi(rawId)
@@ -106,7 +114,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	err, ok := UpdateUser(newUser)
+	err, ok := h.s.UpdateUser(newUser)
 	if err != nil && !ok {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -122,14 +130,14 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+func (h Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	rawId := r.PathValue("id")
 	id, err := strconv.Atoi(rawId)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	err, ok := DeleteUserById(id)
+	err, ok := h.s.DeleteUserById(id)
 	if err != nil && !ok {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

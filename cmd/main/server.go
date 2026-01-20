@@ -14,17 +14,17 @@ import (
 	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
 )
 
-func setupServer(handler http.Handler) {
+func setupServer(v envLoading.EnvVariables, handler http.Handler) {
 	server := &http.Server{
-		Addr:              envLoading.EnvVars.Addr,
+		Addr:              v.Addr,
 		Handler:           handler,
-		ReadTimeout:       envLoading.EnvVars.ReadTimeout,
-		ReadHeaderTimeout: envLoading.EnvVars.ReadHeaderTimeout,
-		WriteTimeout:      envLoading.EnvVars.WriteTimeout,
-		IdleTimeout:       envLoading.EnvVars.IdleTimeout,
+		ReadTimeout:       v.ReadTimeout,
+		ReadHeaderTimeout: v.ReadHeaderTimeout,
+		WriteTimeout:      v.WriteTimeout,
+		IdleTimeout:       v.IdleTimeout,
 	}
 
-	log.Printf("server listening %v started\n", envLoading.EnvVars.Addr)
+	log.Printf("server listening %v started\n", v.Addr)
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {

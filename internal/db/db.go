@@ -10,9 +10,9 @@ import (
 
 var DB *sql.DB
 
-func InitDB() *sql.DB {
+func InitDB(v envLoading.EnvVariables) *sql.DB {
 	var err error
-	DB, err = sql.Open("pgx", envLoading.DbConnParams.GetDsn())
+	DB, err = sql.Open("pgx", v.GetDsn())
 	if err != nil {
 		log.Fatalln("Cannot connect to database:", err)
 		return nil

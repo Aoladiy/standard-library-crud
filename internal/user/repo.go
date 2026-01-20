@@ -9,11 +9,15 @@ import (
 )
 
 type Repo struct {
-	db *sql.DB
+	Db *sql.DB
+}
+
+func NewRepo(db *sql.DB) *Repo {
+	return &Repo{Db: db}
 }
 
 func (r Repo) beginTransaction() (tx *sql.Tx, rollback func(tx *sql.Tx)) {
-	tx, err := r.db.Begin()
+	tx, err := r.Db.Begin()
 	rollback = func(tx *sql.Tx) {
 		_ = tx.Rollback()
 	}
@@ -27,7 +31,7 @@ func (r Repo) beginTransaction() (tx *sql.Tx, rollback func(tx *sql.Tx)) {
 func (r Repo) getUserById(id int) (user User, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(3)*time.Second)
 	defer cancel()
-	row := r.db.QueryRowContext(ctx, "SELECT id, email, fullname, phonenumber, age FROM users WHERE id = $1", id)
+	row := r.Db.QueryRowContext(ctx, "SELECT id, email, fullname, phonenumber, age FROM users WHERE id = $1", id)
 	err = row.Scan(&user.Id, &user.Email, &user.FullName, &user.PhoneNumber, &user.Age)
 	if err != nil {
 		log.Println("some trouble while scanning users by id", err)
@@ -40,7 +44,7 @@ func (r Repo) getUsers() ([]User, error) {
 	users := make([]User, 0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(3)*time.Second)
 	defer cancel()
-	rows, err := r.db.QueryContext(ctx, "SELECT id, email, fullname, phonenumber, age FROM users")
+	rows, err := r.Db.QueryContext(ctx, "SELECT id, email, fullname, phonenumber, age FROM users")
 	if err != nil {
 		log.Println("some trouble while selecting all users", err)
 		return nil, err
@@ -90,7 +94,7 @@ func (r Repo) updateUser(user User) (err error, ok bool) {
 	defer rollback(tx)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(3)*time.Second)
 	defer cancel()
-	result, err := r.db.ExecContext(ctx,
+	result, err := r.Db.ExecContext(ctx,
 		"UPDATE users SET email = $1, fullname = $2, phonenumber = $3, age = $4 where id = $5",
 		user.Email, user.FullName, user.PhoneNumber, user.Age, user.Id)
 	if err != nil {
@@ -116,7 +120,7 @@ func (r Repo) updateUser(user User) (err error, ok bool) {
 func (r Repo) deleteUserById(id int) (err error, ok bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(3)*time.Second)
 	defer cancel()
-	result, err := r.db.ExecContext(ctx, "DELETE FROM users WHERE id = $1", id)
+	result, err := r.Db.ExecContext(ctx, "DELETE FROM users WHERE id = $1", id)
 	if err != nil {
 		log.Println("some trouble while deleting user by id", err)
 		return err, false

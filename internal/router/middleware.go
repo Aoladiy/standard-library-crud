@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
 	"github.com/google/uuid"
 )
 
@@ -62,7 +61,7 @@ func BasicAuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		if envLoading.EnvVars.LoadedUsername == username && envLoading.EnvVars.LoadedPassword == password {
+		if envVars.LoadedUsername == username && envVars.LoadedPassword == password {
 			next.ServeHTTP(w, r)
 			return
 		}
