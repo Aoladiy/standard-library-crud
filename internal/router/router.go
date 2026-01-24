@@ -7,10 +7,7 @@ import (
 	"github.com/Aoladiy/standard-library-crud/internal/user"
 )
 
-var envVars envLoading.EnvVariables
-
-func SetupRouter(v envLoading.EnvVariables, h user.Handler) http.Handler {
-	envVars = v
+func SetupRouter(v envLoading.EnvVariables, h *user.Handler) http.Handler {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /user/{id}", h.GetUserHandler)
 	router.HandleFunc("GET /user", h.GetUsersHandler)
@@ -21,7 +18,7 @@ func SetupRouter(v envLoading.EnvVariables, h user.Handler) http.Handler {
 		router,
 		RequestIdMiddleware,
 		LoggerMiddleware,
-		BasicAuthMiddleware,
+		BasicAuthMiddleware(v.LoadedUsername, v.LoadedPassword),
 		TimeoutMiddleware,
 	)
 }

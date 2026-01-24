@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"log"
 	"net/http"
@@ -10,11 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Aoladiy/standard-library-crud/internal/db"
 	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
 )
 
-func setupServer(v envLoading.EnvVariables, handler http.Handler) {
+func setupServer(v envLoading.EnvVariables, handler http.Handler, db *sql.DB) {
 	server := &http.Server{
 		Addr:              v.Addr,
 		Handler:           handler,
@@ -32,13 +32,13 @@ func setupServer(v envLoading.EnvVariables, handler http.Handler) {
 			return
 		}
 	}()
-	err := gracefulShutdown(server)
+	err := gracefulShutdown(server, db)
 	if err != nil {
 		return
 	}
 }
 
-func gracefulShutdown(server *http.Server) error {
+func gracefulShutdown(server *http.Server, db *sql.DB) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
@@ -49,7 +49,7 @@ func gracefulShutdown(server *http.Server) error {
 		log.Println("Error while shutdown", err)
 		return err
 	}
-	err = db.DB.Close()
+	err = db.Close()
 	if err != nil {
 		log.Println("Error while closing db", err)
 		return err

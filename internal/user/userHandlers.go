@@ -1,17 +1,19 @@
 package user
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 type Handler struct {
-	s Service
+	s *Service
 }
 
-func NewHandler(s Service) *Handler {
+func NewHandler(s *Service) *Handler {
 	return &Handler{s: s}
 }
 
@@ -114,16 +116,12 @@ func (h Handler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Validation failed"+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	err, ok := h.s.UpdateUser(newUser)
-	if err != nil && !ok {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	err = h.s.UpdateUser(newUser)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "Nothing updated, most likely there is just no rows with such id: "+rawId, http.StatusBadRequest)
 		return
 	}
-	if err != nil {
-		_, err = w.Write([]byte("Nothing updated, most likely there is just no rows with such id: " + rawId))
-	} else {
-		_, err = w.Write([]byte("Successfully updated User with ID: " + rawId))
-	}
+	_, err = w.Write([]byte("Successfully updated User with ID: " + rawId))
 	if err != nil {
 		log.Println(err)
 		return
@@ -137,16 +135,12 @@ func (h Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	err, ok := h.s.DeleteUserById(id)
-	if err != nil && !ok {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	err = h.s.DeleteUserById(id)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "Nothing deleted, most likely there is just no rows with such id: "+rawId, http.StatusBadRequest)
 		return
 	}
-	if err != nil {
-		_, err = w.Write([]byte("Nothing deleted, most likely there is just no rows with such id: " + rawId))
-	} else {
-		_, err = w.Write([]byte("Successfully deleted User with ID: " + rawId))
-	}
+	_, err = w.Write([]byte("Successfully deleted User with ID: " + rawId))
 	if err != nil {
 		log.Println(err)
 		return

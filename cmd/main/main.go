@@ -11,8 +11,8 @@ func main() {
 	envVars := envLoading.LoadEnvVariables()
 	database := db.InitDB(envVars)
 	repo := user.NewRepo(database)
-	service := user.NewService(*repo)
-	handler := user.NewHandler(*service)
-	setupRouter := router.SetupRouter(envVars, *handler)
-	setupServer(envVars, setupRouter)
+	service := user.NewService(repo)
+	handler := user.NewHandler(service)
+	setupRouter := router.SetupRouter(envVars, handler)
+	setupServer(envVars, setupRouter, database)
 }
