@@ -1,5 +1,12 @@
 package main
 
+// @title Standard Library CRUD API
+// @version 1.0
+// @description CRUD API for managing users.
+// @host localhost:8080
+// @BasePath /
+// @securityDefinitions.basic BasicAuth
+
 import (
 	"github.com/Aoladiy/standard-library-crud/internal/db"
 	"github.com/Aoladiy/standard-library-crud/internal/envLoading"
